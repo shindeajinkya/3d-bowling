@@ -3,81 +3,63 @@
     {
       "bufferView": 2,
       "componentType": 5126,
-      "count": 909,
+      "count": 9356,
       "max": [
-        1.0,
-        1.0,
-        0.9978410005569458
+        0.9794806241989136,
+        0.9850431084632874,
+        0.9806526899337769
       ],
       "min": [
-        -1.0,
-        -1.0,
-        -0.9978410005569458
+        -0.9794804453849792,
+        -0.9850431084632874,
+        -0.9798533916473389
       ],
       "type": "VEC3"
     },
     {
       "bufferView": 2,
-      "byteOffset": 10908,
+      "byteOffset": 112272,
       "componentType": 5126,
-      "count": 909,
+      "count": 9356,
       "max": [
-        0.9999595880508423,
-        0.9999442100524902,
-        0.9999996423721313
+        0.9998412132263184,
+        1.0,
+        0.9999269247055054
       ],
       "min": [
-        -0.999950647354126,
-        -0.9999442100524902,
-        -0.9999939203262329
+        -0.9998412132263184,
+        -1.0,
+        -1.0
       ],
       "type": "VEC3"
     },
     {
-      "bufferView": 3,
-      "componentType": 5126,
-      "count": 909,
-      "max": [
-        0.9999820590019226,
-        0.9999828934669495,
-        0.9999768137931824,
-        1.0
-      ],
-      "min": [
-        -0.9999832510948181,
-        -0.9999567866325378,
-        -0.9999122023582458,
-        1.0
-      ],
-      "type": "VEC4"
-    },
-    {
       "bufferView": 1,
       "componentType": 5126,
-      "count": 909,
+      "count": 9356,
       "max": [
-        0.9941999912261963,
-        0.9865000247955322
+        0.9924242496490479,
+        0.4723820686340332
       ],
       "min": [
-        0.022199999541044235,
-        0.010700000450015068
+        0.007575750816613436,
+        0.0
       ],
       "type": "VEC2"
     },
     {
       "bufferView": 0,
       "componentType": 5125,
-      "count": 4746,
+      "count": 26928,
       "type": "SCALAR"
     }
   ],
   "asset": {
     "extras": {
-      "author": "Diversant-ka (https://sketchfab.com/Diversant-ka)",
+      "author": "MSerdar Tekin (https://sketchfab.com/teriologia)",
       "license": "CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)",
-      "source": "https://sketchfab.com/3d-models/bowling-ball-5d31d395e0e24138900065b642ac8299",
-      "title": "Bowling ball"
+      "source": "https://sketchfab.com/3d-models/bowling-ball-fc8f1162901a4e38b506fe1ab229f296",
+      "title": "Bowling Ball"
     },
     "generator": "Sketchfab-12.65.0",
     "version": "2.0"
@@ -85,84 +67,60 @@
   "bufferViews": [
     {
       "buffer": 0,
-      "byteLength": 18984,
+      "byteLength": 107712,
       "name": "floatBufferViews",
       "target": 34963
     },
     {
       "buffer": 0,
-      "byteLength": 7272,
-      "byteOffset": 18984,
+      "byteLength": 74848,
+      "byteOffset": 107712,
       "byteStride": 8,
       "name": "floatBufferViews",
       "target": 34962
     },
     {
       "buffer": 0,
-      "byteLength": 21816,
-      "byteOffset": 26256,
+      "byteLength": 224544,
+      "byteOffset": 182560,
       "byteStride": 12,
-      "name": "floatBufferViews",
-      "target": 34962
-    },
-    {
-      "buffer": 0,
-      "byteLength": 14544,
-      "byteOffset": 48072,
-      "byteStride": 16,
       "name": "floatBufferViews",
       "target": 34962
     }
   ],
   "buffers": [
     {
-      "byteLength": 62616,
+      "byteLength": 407104,
       "uri": "scene.bin"
-    }
-  ],
-  "images": [
-    {
-      "uri": "textures/DefaultMaterial_baseColor.jpeg"
-    },
-    {
-      "uri": "textures/DefaultMaterial_metallicRoughness.png"
-    },
-    {
-      "uri": "textures/DefaultMaterial_normal.png"
     }
   ],
   "materials": [
     {
       "doubleSided": true,
-      "name": "DefaultMaterial",
-      "normalTexture": {
-        "index": 2
-      },
-      "occlusionTexture": {
-        "index": 1
-      },
+      "name": "Material.001",
       "pbrMetallicRoughness": {
-        "baseColorTexture": {
-          "index": 0
-        },
-        "metallicRoughnessTexture": {
-          "index": 1
-        }
+        "baseColorFactor": [
+          0.00227288,
+          0.0046769,
+          0.0374103,
+          1.0
+        ],
+        "metallicFactor": 0.0,
+        "roughnessFactor": 0.15
       }
     }
   ],
   "meshes": [
     {
-      "name": "defaultMaterial",
+      "name": "Object_0",
       "primitives": [
         {
           "attributes": {
             "NORMAL": 1,
             "POSITION": 0,
-            "TANGENT": 2,
-            "TEXCOORD_0": 3
+            "TEXCOORD_0": 2
           },
-          "indices": 4,
+          "indices": 3,
           "material": 0,
           "mode": 4
         }
@@ -198,43 +156,59 @@
       "children": [
         2
       ],
+      "name": "root"
+    },
+    {
+      "children": [
+        3
+      ],
       "matrix": [
         1.0,
         0.0,
         0.0,
         0.0,
         0.0,
-        -4.371139006309477e-08,
-        0.999999999999999,
+        2.220446049250313e-16,
+        1.0,
         0.0,
         0.0,
-        -0.999999999999999,
-        -4.371139006309477e-08,
+        -1.0,
+        2.220446049250313e-16,
         0.0,
         0.0,
         0.0,
         0.0,
         1.0
       ],
-      "name": "Collada visual scene group"
+      "name": "GLTF_SceneRootNode"
     },
     {
       "children": [
-        3
+        4
       ],
-      "name": "g"
+      "matrix": [
+        0.14000000059604645,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.14000000059604645,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.14000001549720764,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0
+      ],
+      "name": "Icosphere_2"
     },
     {
       "mesh": 0,
-      "name": "defaultMaterial"
-    }
-  ],
-  "samplers": [
-    {
-      "magFilter": 9729,
-      "minFilter": 9987,
-      "wrapS": 10497,
-      "wrapT": 10497
+      "name": "Object_4"
     }
   ],
   "scene": 0,
@@ -244,20 +218,6 @@
       "nodes": [
         0
       ]
-    }
-  ],
-  "textures": [
-    {
-      "sampler": 0,
-      "source": 0
-    },
-    {
-      "sampler": 0,
-      "source": 1
-    },
-    {
-      "sampler": 0,
-      "source": 2
     }
   ]
 }

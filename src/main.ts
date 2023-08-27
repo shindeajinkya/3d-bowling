@@ -48,13 +48,13 @@ const floorColorTexture = textureLoader.load(
   "/textures/floor/Wood066_1K_Color.jpg"
 );
 const floorDisplacementTexture = textureLoader.load(
-  "/textures/floor/Wood066_1K_Color.jpg"
+  "/textures/floor/Wood066_1K_Displacement.jpg"
 );
 const floorNormalTexture = textureLoader.load(
-  "/textures/floor/Wood066_1K_Color.jpg"
+  "/textures/floor/Wood066_1K_NormalGL.jpg"
 );
 const floorRoghnessTexture = textureLoader.load(
-  "/textures/floor/Wood066_1K_Color.jpg"
+  "/textures/floor/Wood066_1K_Roughness.jpg"
 );
 
 /**
@@ -299,7 +299,7 @@ const createPin = (model: THREE.Group, x: number, z: number) => {
 
 // Load model to the scene
 // Pins
-gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
+gltfLoader.load("/bowling_pin/scene.gltf", (gltf) => {
   gltf.scene.scale.set(0.014, 0.014, 0.014);
   const clonedScene = gltf.scene.clone();
 
@@ -334,7 +334,7 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
 
 // Ball
 gltfLoader.load("/bowling_ball/scene.gltf", (gltf) => {
-  gltf.scene.scale.set(0.2, 0.2, 0.2);
+  gltf.scene.scale.set(1.45, 1.45, 1.45);
   gltf.scene.position.y = 1;
   gltf.scene.position.x = -1;
   scene.add(gltf.scene);
@@ -365,7 +365,7 @@ const floorMaterial = new THREE.MeshStandardMaterial({
   displacementMap: floorDisplacementTexture,
   normalMap: floorNormalTexture,
   roughnessMap: floorRoghnessTexture,
-  displacementScale: 0.1,
+  displacementScale: 0,
 });
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
@@ -461,18 +461,21 @@ scene.add(ambientLight);
 // pointLight.position.set(3, 2, 0.25)
 // scene.add(pointLight);
 
-const directionalLight = new THREE.DirectionalLight("#ffffff", 10);
+const directionalLight = new THREE.DirectionalLight("#ffffff", 5);
 directionalLight.castShadow = true;
-directionalLight.shadow.camera.far = 10;
+directionalLight.shadow.camera.far = 20;
 directionalLight.shadow.mapSize.set(1024, 1024);
 directionalLight.shadow.normalBias = 0.1;
-directionalLight.position.set(3, 2, 0.25);
+directionalLight.position.set(-8, 2, 0.25);
 scene.add(directionalLight);
 
 directionalLight.target.position.set(0, 0, 0);
 directionalLight.target.updateWorldMatrix(false, false);
 
-// const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.4);
+// const directionalLightHelper = new THREE.DirectionalLightHelper(
+//   directionalLight,
+//   0.4
+// );
 // scene.add(directionalLightHelper);
 
 camera.position.x = -8;
