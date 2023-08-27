@@ -12,6 +12,32 @@ interface Dimensions {
   depth: number;
 }
 
+var updateCOM = function (body: CANNON.Body) {
+  //first calculate the center of mass
+  // NOTE: this method assumes all the shapes are voxels of equal mass.
+  // If you're not using voxels, you'll need to calculate the COM a different way.
+  var com = new CANNON.Vec3();
+  body.shapeOffsets.forEach(function (offset) {
+    com.vadd(offset, com);
+  });
+  com.scale(1 / body.shapes.length, com);
+
+  //move the shapes so the body origin is at the COM
+  body.shapeOffsets.forEach(function (offset) {
+    offset.vsub(com, offset);
+  });
+
+  //now move the body so the shapes' net displacement is 0
+  var worldCOM = new CANNON.Vec3();
+  body.vectorToWorldFrame(com, worldCOM);
+  body.position.vadd(worldCOM, body.position);
+
+  body.shapeOffsets.forEach(function (offset) {
+    com.vadd(offset, com);
+  });
+  com.scale(1 / body.shapes.length, com);
+};
+
 // Canvas
 const canvas = document.querySelector("canvas.webgl");
 
@@ -21,6 +47,21 @@ if (!canvas) {
 
 // Loaders
 const gltfLoader = new GLTFLoader();
+const textureLoader = new THREE.TextureLoader();
+
+// Textures
+const floorColorTexture = textureLoader.load(
+  "/textures/floor/Wood066_1K_Color.jpg"
+);
+const floorDisplacementTexture = textureLoader.load(
+  "/textures/floor/Wood066_1K_Color.jpg"
+);
+const floorNormalTexture = textureLoader.load(
+  "/textures/floor/Wood066_1K_Color.jpg"
+);
+const floorRoghnessTexture = textureLoader.load(
+  "/textures/floor/Wood066_1K_Color.jpg"
+);
 
 /**
  * Sizes
@@ -87,6 +128,7 @@ const cube = new THREE.Mesh(geometry, material);
 cube.position.y = 0.5;
 
 const objectsToUpdate: any[] = [];
+let sphere: THREE.Mesh | null = null;
 const pinsToUpdate: any[] = [];
 
 const sphereGeometry = new THREE.SphereGeometry(1, 20, 20);
@@ -112,16 +154,17 @@ const createSphere = (
   const shape = new CANNON.Sphere(radius);
 
   const body = new CANNON.Body({
-    mass: 2,
+    mass: 10,
     position: new CANNON.Vec3(0, 0, 0),
     shape,
     material: defaultMaterial,
   });
   body.position.copy(position as any);
-
+  // body.sleep();
   world.addBody(body);
-  body.applyLocalForce(new CANNON.Vec3(600, 0, 0), new CANNON.Vec3(0, 0, 0));
+  body.applyLocalForce(new CANNON.Vec3(4000, 0, 0), new CANNON.Vec3(0, 0, 0));
 
+  sphere = mesh;
   // Save in objectsToUpdate
   objectsToUpdate.push({
     mesh,
@@ -142,75 +185,121 @@ const createPin = (
   copiedScene.position.x = x;
   copiedScene.position.z = z;
 
+  const bottomCylinderDimensions = {
+    topRadius: 0.08,
+    bottomRadius: 0.06,
+    height: 0.15,
+  };
+
+  const middleCylinderDimensions = {
+    topRadius: 0.04,
+    bottomRadius: 0.08,
+    height: 0.15,
+  };
+
+  const topCylinderDimensions = {
+    topRadius: 0.05,
+    bottomRadius: 0.04,
+    height: 0.23,
+  };
+
   /**
    * Geometry
    */
-  const boxMaterial = new THREE.MeshStandardMaterial({
-    // wireframe: true,
+  const material = new THREE.MeshStandardMaterial({
+    wireframe: true,
   });
 
-  // bottom box
-  const bottomBoxGeometry = new THREE.BoxGeometry(
-    bottomBoxDimensions.width,
-    bottomBoxDimensions.height,
-    bottomBoxDimensions.depth
-  );
-  const bottomBox = new THREE.Mesh(bottomBoxGeometry, boxMaterial);
-  bottomBox.position.x = x;
-  bottomBox.position.y = 0.15;
-  bottomBox.position.z = 0.15;
-
-  // top box
-  const topBoxGeometry = new THREE.BoxGeometry(
-    topBoxDimensions.width,
-    topBoxDimensions.height,
-    topBoxDimensions.depth
+  // Bottom Cylinder
+  const bottomCylinderGeometry = new THREE.CylinderGeometry(
+    bottomCylinderDimensions.topRadius,
+    bottomCylinderDimensions.bottomRadius,
+    bottomCylinderDimensions.height
   );
 
-  const topBox = new THREE.Mesh(topBoxGeometry, boxMaterial);
-  topBox.position.x = x;
-  topBox.position.y = 0.4;
-  topBox.position.z = z;
+  const bottomCylinder = new THREE.Mesh(bottomCylinderGeometry, material);
+  bottomCylinder.position.x = x;
+  bottomCylinder.position.y = 0.075;
+  bottomCylinder.position.z = z;
+
+  // Sphere
+  const sphereGeometry = new THREE.SphereGeometry(0.08, 10, 10);
+  const sphereMesh = new THREE.Mesh(sphereGeometry, material);
+  sphereMesh.position.x = x;
+  sphereMesh.position.y = 0.15;
+  sphereMesh.position.z = z;
+
+  // middle cylinder
+  const middleCylinderGeometry = new THREE.CylinderGeometry(
+    middleCylinderDimensions.topRadius,
+    middleCylinderDimensions.bottomRadius,
+    middleCylinderDimensions.height
+  );
+
+  const middleCylinder = new THREE.Mesh(middleCylinderGeometry, material);
+  middleCylinder.position.x = x;
+  middleCylinder.position.y = 0.225;
+  middleCylinder.position.z = z;
+
+  // Top Cylinder
+  const topCylinderGeometry = new THREE.CylinderGeometry(
+    topCylinderDimensions.topRadius,
+    topCylinderDimensions.bottomRadius,
+    topCylinderDimensions.height
+  );
+  const topCylinder = new THREE.Mesh(topCylinderGeometry, material);
+  topCylinder.position.x = x;
+  topCylinder.position.y = 0.34;
+  topCylinder.position.z = z;
 
   // Bottle Mesh Group
   const bottleMesh = new THREE.Group();
-  bottleMesh.add(bottomBox);
-  bottleMesh.add(topBox);
+  bottleMesh.add(bottomCylinder);
+  bottleMesh.add(sphereMesh);
+  bottleMesh.add(middleCylinder);
+  bottleMesh.add(topCylinder);
   bottleMesh.visible = false;
 
   /**
    * Physics
    */
   // Shapes
-  const bottomBoxShape = new CANNON.Box(
-    new CANNON.Vec3(
-      bottomBoxDimensions.width * 0.5,
-      bottomBoxDimensions.height * 0.5,
-      bottomBoxDimensions.depth * 0.5
-    )
+  const bottomCylinderShape = new CANNON.Cylinder(
+    bottomCylinderDimensions.topRadius,
+    bottomCylinderDimensions.bottomRadius,
+    bottomCylinderDimensions.height
   );
-  const topBoxShape = new CANNON.Box(
-    new CANNON.Vec3(
-      topBoxDimensions.width * 0.5,
-      topBoxDimensions.height * 0.5,
-      topBoxDimensions.depth * 0.5
-    )
+  const sphereShape = new CANNON.Sphere(0.08);
+  const middleCylinderShape = new CANNON.Cylinder(
+    middleCylinderDimensions.topRadius,
+    middleCylinderDimensions.bottomRadius,
+    middleCylinderDimensions.height
+  );
+  const topCylinderShape = new CANNON.Cylinder(
+    topCylinderDimensions.topRadius,
+    topCylinderDimensions.bottomRadius,
+    topCylinderDimensions.height
   );
 
   // Body
   const pinBody = new CANNON.Body({
-    mass: 0.01,
+    mass: 0.4,
     material: defaultMaterial,
   });
 
-  pinBody.position.set(x, 0.16, z);
-  pinBody.addShape(bottomBoxShape);
-  pinBody.addShape(topBoxShape, new CANNON.Vec3(0, 0.25, 0));
+  pinBody.position.set(x, 0.076, z);
+  pinBody.addShape(bottomCylinderShape, new CANNON.Vec3(0, 0, 0));
+  pinBody.addShape(sphereShape, new CANNON.Vec3(0, 0.075, 0));
+  pinBody.addShape(middleCylinderShape, new CANNON.Vec3(0, 0.15, 0));
+  pinBody.addShape(topCylinderShape, new CANNON.Vec3(0, 0.34, 0));
+
+  updateCOM(pinBody);
+  pinBody.sleep();
 
   // adding to scene
-  world.addBody(pinBody);
-  scene.add(bottleMesh);
   scene.add(copiedScene);
+  scene.add(bottleMesh);
+  world.addBody(pinBody);
 
   // updating pinsToUpdate
   pinsToUpdate.push({
@@ -249,7 +338,7 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
     depth: 0.1,
   };
 
-  // createPin(clonedScene, 0, 0, 0, bottomBoxDimensions, topBoxDimensions);
+  // createPin(clonedScene, 0, 0, bottomBoxDimensions, topBoxDimensions);
 
   let currentPosition = 0;
   for (let i = 0; i < 4; i++) {
@@ -260,8 +349,8 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
       copiedScene.position.z = positionZ * 0.35;
       createPin(
         clonedScene,
-        currentPosition * 0.2,
-        positionZ * 0.38,
+        currentPosition * 0.5,
+        positionZ * 0.5,
         bottomBoxDimensions,
         topBoxDimensions
       );
@@ -270,12 +359,11 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
     }
     currentPosition++;
   }
-  console.log(pinsToUpdate);
 });
 
 // Ball
 gltfLoader.load("/bowling_ball/scene.gltf", (gltf) => {
-  gltf.scene.scale.set(0.25, 0.25, 0.25);
+  gltf.scene.scale.set(0.2, 0.2, 0.2);
   gltf.scene.position.y = 1;
   gltf.scene.position.x = -1;
   scene.add(gltf.scene);
@@ -288,7 +376,7 @@ gltfLoader.load("/bowling_ball/scene.gltf", (gltf) => {
       child.castShadow = true;
     }
   });
-  createSphere(0.25, new THREE.Vector3(-1, 0.25, 0), gltf.scene);
+  createSphere(0.2, new THREE.Vector3(-6.5, 0.2, 0), gltf.scene);
 });
 
 // Floor
@@ -300,11 +388,18 @@ floorBody.quaternion.setFromAxisAngle(new CANNON.Vec3(-1, 0, 0), Math.PI * 0.5);
 world.addBody(floorBody);
 
 // Adding a plane
-const floorGeometry = new THREE.PlaneGeometry(4, 4);
-const floorMaterial = new THREE.MeshStandardMaterial();
+const floorGeometry = new THREE.PlaneGeometry(15, 2.5);
+const floorMaterial = new THREE.MeshStandardMaterial({
+  map: floorColorTexture,
+  displacementMap: floorDisplacementTexture,
+  normalMap: floorNormalTexture,
+  roughnessMap: floorRoghnessTexture,
+  displacementScale: 0.1,
+});
 const floor = new THREE.Mesh(floorGeometry, floorMaterial);
 
 floor.rotation.x = -Math.PI * 0.5;
+floor.position.copy(floorBody.position as any);
 
 scene.add(floor);
 
@@ -368,15 +463,21 @@ function createWall(
     mesh: wall,
   });
 }
-const wallData = {
+const wallDataSides = {
   width: 0.1,
   height: 0.4,
-  depth: 4,
+  depth: 14.9,
 };
-createWall(wallData, -2, 0.2, 0);
-createWall(wallData, 2, 0.2, 0);
-createWall(wallData, 0, 0.2, -2, true);
-createWall(wallData, 0, 0.2, 2, true);
+
+const wallDataFront = {
+  width: 0.1,
+  height: 0.4,
+  depth: 2.4,
+};
+createWall(wallDataFront, -7.5, 0.2, 0);
+createWall(wallDataFront, 7.5, 0.2, 0);
+createWall(wallDataSides, 0, 0.2, -1.25, true);
+createWall(wallDataSides, 0, 0.2, 1.25, true);
 
 // Lights
 const ambientLight = new THREE.AmbientLight();
@@ -392,8 +493,8 @@ scene.add(ambientLight);
 const directionalLight = new THREE.DirectionalLight("#ffffff", 10);
 directionalLight.castShadow = true;
 directionalLight.shadow.camera.far = 10;
-directionalLight.shadow.mapSize.set(512, 512);
-// directionalLight.shadow.normalBias = 0.05
+directionalLight.shadow.mapSize.set(1024, 1024);
+directionalLight.shadow.normalBias = 0.1;
 directionalLight.position.set(3, 2, 0.25);
 scene.add(directionalLight);
 
@@ -403,9 +504,10 @@ directionalLight.target.updateWorldMatrix(false, false);
 // const directionalLightHelper = new THREE.DirectionalLightHelper(directionalLight, 0.4);
 // scene.add(directionalLightHelper);
 
-camera.position.x = 1;
+camera.position.x = -8;
 camera.position.y = 1;
-camera.position.z = 1.5;
+camera.position.z = -0;
+camera.lookAt(new THREE.Vector3());
 
 window.addEventListener("resize", () => {
   // Update sizes
@@ -436,6 +538,7 @@ renderer.toneMappingExposure = 1.75;
 
 // OrbitControls
 const controls = new OrbitControls(camera, renderer.domElement);
+controls.enabled = false;
 controls.enableDamping = true;
 controls.update();
 
@@ -453,7 +556,7 @@ function tick() {
   oldElapsedTime = elapsedTime;
 
   for (const object of objectsToUpdate) {
-    // object.body.applyForce(new CANNON.Vec3(0.5, 0, 0), object.body.position)
+    // object.body.applyForce(new CANNON.Vec3(0.5, 0, 0), object.body.position);
     if (
       object.mesh.isGroup &&
       object.body.shapes.length > 1 &&
@@ -471,22 +574,29 @@ function tick() {
   }
 
   for (const pin of pinsToUpdate) {
-    // pin.model.children(obj) => {
-    //   obj.quaternion.copy(pin.body.quaternion);
-    //   obj.position.copy(pin.body.position);
-    // });
-    pin.model?.quaternion.copy(pin.body.quaternion);
-    pin.model?.position.copy(pin.body.position);
-
     pin.mesh.children.forEach((child: THREE.Object3D, index: number) => {
       child.quaternion.copy(pin.body.shapeOrientations[index]);
       child.position.copy(pin.body.shapeOffsets[index]);
     });
     pin.mesh?.quaternion.copy(pin.body.quaternion);
     pin.mesh?.position.copy(pin.body.position);
+
+    pin.model?.quaternion.copy(pin.body.quaternion);
+    pin.model?.position.copy(pin.body.position);
   }
 
   world.step(1 / 60, deltaTime, 3);
+
+  // updating camera position to follow bowl
+  if (sphere) {
+    // camera.position.x = sphere.position.x - 2;
+    camera.position.x = sphere.position.x < 0 ? sphere.position.x - 2 : -2;
+    // camera.position.y = sphere.position.y + 0.;
+    // camera.position.z =
+    //   sphere.position.z < 0
+    //     ? Math.cosh(sphere.position.z)
+    //     : Math.sin(sphere.position.z - 2);
+  }
 
   controls.update();
 
