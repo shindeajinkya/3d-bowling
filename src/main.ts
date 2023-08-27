@@ -6,12 +6,6 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
 import * as CANNON from "cannon-es";
 
-interface Dimensions {
-  width: number;
-  height: number;
-  depth: number;
-}
-
 var updateCOM = function (body: CANNON.Body) {
   //first calculate the center of mass
   // NOTE: this method assumes all the shapes are voxels of equal mass.
@@ -173,13 +167,7 @@ const createSphere = (
   });
 };
 
-const createPin = (
-  model: THREE.Group,
-  x: number,
-  z: number,
-  bottomBoxDimensions: Dimensions,
-  topBoxDimensions: Dimensions
-) => {
+const createPin = (model: THREE.Group, x: number, z: number) => {
   // Copy and update scene position
   const copiedScene = model.clone(true);
   copiedScene.position.x = x;
@@ -327,17 +315,6 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
 
   // scene.add(clonedScene);
 
-  const bottomBoxDimensions = {
-    width: 0.17,
-    height: 0.3,
-    depth: 0.17,
-  };
-  const topBoxDimensions = {
-    width: 0.1,
-    height: 0.2,
-    depth: 0.1,
-  };
-
   // createPin(clonedScene, 0, 0, bottomBoxDimensions, topBoxDimensions);
 
   let currentPosition = 0;
@@ -347,13 +324,7 @@ gltfLoader.load("/bowling_pin/scene2.gltf", (gltf) => {
       const copiedScene = gltf.scene.clone();
       copiedScene.position.x = currentPosition * 0.2;
       copiedScene.position.z = positionZ * 0.35;
-      createPin(
-        clonedScene,
-        currentPosition * 0.5,
-        positionZ * 0.5,
-        bottomBoxDimensions,
-        topBoxDimensions
-      );
+      createPin(clonedScene, currentPosition * 0.5, positionZ * 0.5);
       // scene.add(copiedScene);
       positionZ++;
     }
