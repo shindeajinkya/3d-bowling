@@ -5,6 +5,8 @@ import Renderer from "./Renderer";
 import Camera from "./Camera";
 import World from "./World";
 import Time from "./Utils/Time";
+import Resources from "./Utils/Resources";
+import sources from "./sources";
 
 declare let window: BowlingWindow;
 
@@ -18,6 +20,7 @@ class Experience {
   camera?: Camera;
   world?: World;
   time?: Time;
+  resources?: Resources;
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -33,6 +36,7 @@ class Experience {
     // Setup
     this.sizes = new Sizes();
     this.time = new Time();
+    this.resources = new Resources(sources);
     this.camera = new Camera();
     this.renderer = new Renderer();
     this.world = new World();
