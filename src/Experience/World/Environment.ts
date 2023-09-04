@@ -19,7 +19,7 @@ export default class Environment {
   }
 
   setDirectionalLight() {
-    const directionalLight = new THREE.DirectionalLight("#ffffff", 3);
+    const directionalLight = new THREE.DirectionalLight("#ffffff", 5);
     directionalLight.castShadow = true;
     directionalLight.shadow.camera.far = 20;
     directionalLight.shadow.mapSize.set(1024, 1024);

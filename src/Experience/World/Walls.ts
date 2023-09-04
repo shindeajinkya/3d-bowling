@@ -45,12 +45,12 @@ export default class Walls {
       this.getGeomtryWithDimensions(dimensions),
       this.material
     );
-    wall.castShadow = true;
     const physicsBody = this.createPhysicsBody(
       dimensions,
       position,
       shouldRotateY
     );
+    wall.castShadow = true;
     wall.position.set(x, y, z);
     if (shouldRotateY) {
       wall.rotation.y = -Math.PI * 0.5;

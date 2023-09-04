@@ -36,28 +36,16 @@ export default class Floor {
     if (!this.resources) return;
     this.textures.normal = this.resources.items
       .floorNormalTexture as THREE.Texture;
-    this.textures.normal.repeat.set(1.5, 1.5);
-    this.textures.normal.wrapS = THREE.RepeatWrapping;
-    this.textures.normal.wrapT = THREE.RepeatWrapping;
 
     this.textures.roughness = this.resources.items
       .floorRoughnessTexture as THREE.Texture;
-    this.textures.roughness.repeat.set(1.5, 1.5);
-    this.textures.roughness.wrapS = THREE.RepeatWrapping;
-    this.textures.roughness.wrapT = THREE.RepeatWrapping;
 
     this.textures.displacement = this.resources.items
       .floorDisplacementTexture as THREE.Texture;
-    // this.textures.displacement.repeat.set(1.5, 1.5);
-    // this.textures.displacement.wrapS = THREE.RepeatWrapping;
-    // this.textures.displacement.wrapT = THREE.RepeatWrapping;
 
     this.textures.color = this.resources.items
       .floorColorTexture as THREE.Texture;
     this.textures.color.colorSpace = THREE.SRGBColorSpace;
-    this.textures.color.repeat.set(1.5, 1.5);
-    this.textures.color.wrapS = THREE.RepeatWrapping;
-    this.textures.color.wrapT = THREE.RepeatWrapping;
   }
 
   setMaterial() {
