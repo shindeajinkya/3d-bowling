@@ -36,6 +36,7 @@ export default class Camera {
   setOrbitControls() {
     if (!this.instance || !this.canvas) return;
     this.controls = new OrbitControls(this.instance, this.canvas);
+    this.controls.enabled = false;
     this.controls.enableDamping = true;
   }
 
@@ -47,6 +48,6 @@ export default class Camera {
 
   update() {
     if (!this.controls) return;
-    this.controls.update();
+    // this.controls.update();
   }
 }

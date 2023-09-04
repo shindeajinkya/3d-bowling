@@ -1,19 +1,46 @@
 import * as THREE from "three";
+import * as CANNON from "cannon-es";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import Experience from "..";
 import Resources from "../Utils/Resources";
+import PhysicsWorld from "./PhysicsWorld";
+
+interface DataToUpdate {
+  body: CANNON.Body;
+  mesh: THREE.Group;
+  model: THREE.Group;
+}
 
 export default class Pins {
   experience: Experience | null = null;
   scene?: THREE.Scene;
   resources?: Resources;
   resource?: GLTF;
-  //   model?:
+  bottomCylinderDimensions = {
+    topRadius: 0.08,
+    bottomRadius: 0.06,
+    height: 0.15,
+  };
+
+  middleCylinderDimensions = {
+    topRadius: 0.04,
+    bottomRadius: 0.08,
+    height: 0.15,
+  };
+
+  topCylinderDimensions = {
+    topRadius: 0.05,
+    bottomRadius: 0.04,
+    height: 0.23,
+  };
+  physicsWorld?: PhysicsWorld;
+  pinsToUpdate: DataToUpdate[] = [];
 
   constructor() {
     this.experience = new Experience(null);
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
+    this.physicsWorld = this.experience.physicsWorld;
 
     // Setup
     this.resource = this.resources?.items.pinModel as GLTF;
@@ -27,41 +54,40 @@ export default class Pins {
     const clonedScene = this.resource.scene.clone();
     clonedScene.position.x = x;
     // remove y once physics in implmented
-    clonedScene.position.y = 0.217;
+    // clonedScene.position.y = 0.217;
     clonedScene.position.z = z;
-    this.createGeometryForPin(x, z);
+
+    clonedScene.traverse((child) => {
+      if (
+        child instanceof THREE.Mesh &&
+        child.material instanceof THREE.MeshStandardMaterial
+      ) {
+        child.material.needsUpdate = true;
+        child.castShadow = true;
+      }
+    });
+
+    const mesh = this.createGeometryForPin(x, z);
+    const body = this.createPhysicsBodyForPin(x, z);
     this.scene?.add(clonedScene);
+    this.pinsToUpdate.push({
+      model: clonedScene,
+      mesh,
+      body,
+    });
   }
 
   // Creating geometry to replicate position of the
-  createGeometryForPin(x: number, z: number) {
-    const bottomCylinderDimensions = {
-      topRadius: 0.08,
-      bottomRadius: 0.06,
-      height: 0.15,
-    };
-
-    const middleCylinderDimensions = {
-      topRadius: 0.04,
-      bottomRadius: 0.08,
-      height: 0.15,
-    };
-
-    const topCylinderDimensions = {
-      topRadius: 0.05,
-      bottomRadius: 0.04,
-      height: 0.23,
-    };
-
+  createGeometryForPin(x: number, z: number): THREE.Group {
     const material = new THREE.MeshStandardMaterial({
       wireframe: true,
     });
 
     // Bottom Cylinder
     const bottomCylinderGeometry = new THREE.CylinderGeometry(
-      bottomCylinderDimensions.topRadius,
-      bottomCylinderDimensions.bottomRadius,
-      bottomCylinderDimensions.height
+      this.bottomCylinderDimensions.topRadius,
+      this.bottomCylinderDimensions.bottomRadius,
+      this.bottomCylinderDimensions.height
     );
 
     const bottomCylinder = new THREE.Mesh(bottomCylinderGeometry, material);
@@ -78,9 +104,9 @@ export default class Pins {
 
     // middle cylinder
     const middleCylinderGeometry = new THREE.CylinderGeometry(
-      middleCylinderDimensions.topRadius,
-      middleCylinderDimensions.bottomRadius,
-      middleCylinderDimensions.height
+      this.middleCylinderDimensions.topRadius,
+      this.middleCylinderDimensions.bottomRadius,
+      this.middleCylinderDimensions.height
     );
 
     const middleCylinder = new THREE.Mesh(middleCylinderGeometry, material);
@@ -90,9 +116,9 @@ export default class Pins {
 
     // Top Cylinder
     const topCylinderGeometry = new THREE.CylinderGeometry(
-      topCylinderDimensions.topRadius,
-      topCylinderDimensions.bottomRadius,
-      topCylinderDimensions.height
+      this.topCylinderDimensions.topRadius,
+      this.topCylinderDimensions.bottomRadius,
+      this.topCylinderDimensions.height
     );
     const topCylinder = new THREE.Mesh(topCylinderGeometry, material);
     topCylinder.position.x = x;
@@ -108,6 +134,47 @@ export default class Pins {
     bottleMesh.visible = false;
 
     this.scene?.add(bottleMesh);
+    return bottleMesh;
+  }
+
+  createPhysicsBodyForPin(x: number, z: number): CANNON.Body {
+    // Shapes
+    const bottomCylinderShape = new CANNON.Cylinder(
+      this.bottomCylinderDimensions.topRadius,
+      this.bottomCylinderDimensions.bottomRadius,
+      this.bottomCylinderDimensions.height
+    );
+    const sphereShape = new CANNON.Sphere(0.08);
+    const middleCylinderShape = new CANNON.Cylinder(
+      this.middleCylinderDimensions.topRadius,
+      this.middleCylinderDimensions.bottomRadius,
+      this.middleCylinderDimensions.height
+    );
+    const topCylinderShape = new CANNON.Cylinder(
+      this.topCylinderDimensions.topRadius,
+      this.topCylinderDimensions.bottomRadius,
+      this.topCylinderDimensions.height
+    );
+
+    // Body
+    const pinBody = new CANNON.Body({
+      mass: 0.4,
+      material: this.physicsWorld?.defaultMaterial,
+    });
+
+    // Setting position
+    pinBody.position.set(x, 0.076, z);
+    pinBody.addShape(bottomCylinderShape, new CANNON.Vec3(0, 0, 0));
+    pinBody.addShape(sphereShape, new CANNON.Vec3(0, 0.075, 0));
+    pinBody.addShape(middleCylinderShape, new CANNON.Vec3(0, 0.15, 0));
+    pinBody.addShape(topCylinderShape, new CANNON.Vec3(0, 0.34, 0));
+
+    // update centre of mass
+    this.updateCOM(pinBody);
+    pinBody.sleep();
+    this.physicsWorld?.instance?.addBody(pinBody);
+
+    return pinBody;
   }
 
   plotPins() {
@@ -120,5 +187,45 @@ export default class Pins {
       }
       currentPosition++;
     }
+  }
+
+  update() {
+    for (const pin of this.pinsToUpdate) {
+      pin.mesh.children.forEach((child: THREE.Object3D, index: number) => {
+        child.quaternion.copy(pin.body.shapeOrientations[index] as any);
+        child.position.copy(pin.body.shapeOffsets[index] as any);
+      });
+      pin.mesh?.quaternion.copy(pin.body.quaternion as any);
+      pin.mesh?.position.copy(pin.body.position as any);
+
+      pin.model?.quaternion.copy(pin.body.quaternion as any);
+      pin.model?.position.copy(pin.body.position as any);
+    }
+  }
+
+  updateCOM(body: CANNON.Body) {
+    //first calculate the center of mass
+    // NOTE: this method assumes all the shapes are voxels of equal mass.
+    // If you're not using voxels, you'll need to calculate the COM a different way.
+    var com = new CANNON.Vec3();
+    body.shapeOffsets.forEach(function (offset) {
+      com.vadd(offset, com);
+    });
+    com.scale(1 / body.shapes.length, com);
+
+    //move the shapes so the body origin is at the COM
+    body.shapeOffsets.forEach(function (offset) {
+      offset.vsub(com, offset);
+    });
+
+    //now move the body so the shapes' net displacement is 0
+    var worldCOM = new CANNON.Vec3();
+    body.vectorToWorldFrame(com, worldCOM);
+    body.position.vadd(worldCOM, body.position);
+
+    body.shapeOffsets.forEach(function (offset) {
+      com.vadd(offset, com);
+    });
+    com.scale(1 / body.shapes.length, com);
   }
 }

@@ -6,6 +6,7 @@ import Environment from "./Environment";
 import Walls from "./Walls";
 import Pins from "./Pins";
 import Bowl from "./Bowl";
+import Camera from "../Camera";
 
 export default class World {
   experience: Experience | null = null;
@@ -16,11 +17,13 @@ export default class World {
   walls?: Walls;
   pins?: Pins;
   bowl?: Bowl;
+  camera?: Camera;
 
   constructor() {
     this.experience = new Experience(null);
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
+    this.camera = this.experience.camera;
 
     if (!this.resources) return;
     // load meshes after resources are ready
@@ -31,5 +34,16 @@ export default class World {
       this.bowl = new Bowl();
       this.environment = new Environment();
     });
+  }
+
+  update() {
+    // this.walls?.update();
+    this.bowl?.update();
+    this.pins?.update();
+
+    if (!this.bowl?.mesh || !this.camera?.instance) return;
+
+    this.camera.instance.position.x =
+      this.bowl?.mesh?.position.x < 0 ? this.bowl?.mesh?.position.x - 4 : -4;
   }
 }

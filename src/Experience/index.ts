@@ -7,6 +7,7 @@ import World from "./World";
 import Time from "./Utils/Time";
 import Resources from "./Utils/Resources";
 import sources from "./sources";
+import PhysicsWorld from "./World/PhysicsWorld";
 
 declare let window: BowlingWindow;
 
@@ -21,6 +22,7 @@ class Experience {
   world?: World;
   time?: Time;
   resources?: Resources;
+  physicsWorld?: PhysicsWorld;
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -40,6 +42,8 @@ class Experience {
     this.camera = new Camera();
     this.renderer = new Renderer();
     this.world = new World();
+    this.physicsWorld = new PhysicsWorld();
+    console.log(this.physicsWorld);
 
     this.sizes.on("resize", () => {
       this.resize();
@@ -52,14 +56,14 @@ class Experience {
   }
 
   resize() {
-    console.log("called", this.sizes);
     this.camera?.resize();
     this.renderer?.resize();
   }
 
   update() {
+    this.physicsWorld?.update();
     this.camera?.update();
-    // this.world?.update();
+    this.world?.update();
     this.renderer?.update();
   }
 }
