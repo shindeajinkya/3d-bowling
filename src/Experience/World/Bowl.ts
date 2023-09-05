@@ -5,6 +5,7 @@ import Experience from "..";
 import Resources from "../Utils/Resources";
 import PhysicsWorld from "./PhysicsWorld";
 import Camera from "../Camera";
+import RayCaster from "../RayCaster";
 
 export default class Bowl {
   experience: Experience | null = null;
@@ -14,12 +15,15 @@ export default class Bowl {
   physicsWorld?: PhysicsWorld;
   physicsBody?: CANNON.Body;
   mesh?: THREE.Mesh;
+  raycaster?: RayCaster;
+  cursorOnBall = false;
 
   constructor() {
     this.experience = new Experience(null);
     this.scene = this.experience.scene;
     this.resources = this.experience.resources;
     this.physicsWorld = this.experience.physicsWorld;
+    this.raycaster = this.experience.raycaster;
 
     // Setup
     this.resource = this.resources?.items.bowlModel as GLTF;
@@ -51,13 +55,17 @@ export default class Bowl {
     const shape = new CANNON.Sphere(0.2);
     this.physicsBody = new CANNON.Body({
       mass: 10,
-      position: new CANNON.Vec3(-6.5, 0.2, 0),
+      position: new CANNON.Vec3(0, 0, 0),
       shape,
       material: this.physicsWorld?.defaultMaterial,
     });
+    this.physicsBody.position.set(-6.5, 0.2, 0);
     this.physicsWorld?.instance?.addBody(this.physicsBody);
+  }
+
+  launch(intensityX: number, intensityZ: number) {
     this.physicsBody.applyLocalForce(
-      new CANNON.Vec3(4000, 0, 0),
+      new CANNON.Vec3(intensityX, 0, intensityZ),
       new CANNON.Vec3(0, 0, 0)
     );
   }
@@ -67,5 +75,16 @@ export default class Bowl {
     this.mesh?.position.copy(this.physicsBody?.position as any);
     this.resource?.scene?.quaternion.copy(this.physicsBody?.quaternion as any);
     this.resource?.scene?.position.copy(this.physicsBody?.position as any);
+
+    if (this.mesh && this.raycaster) {
+      const modelIntersects = this.raycaster.instance?.intersectObject(
+        this.mesh
+      );
+      if (modelIntersects?.length) {
+        this.cursorOnBall = true;
+      } else {
+        this.cursorOnBall = false;
+      }
+    }
   }
 }

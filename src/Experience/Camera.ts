@@ -24,7 +24,7 @@ export default class Camera {
   setInstance() {
     if (!this.sizes || !this.scene) return;
     this.instance = new THREE.PerspectiveCamera(
-      35,
+      75,
       this.sizes?.width / this.sizes?.height,
       0.1,
       100
@@ -48,6 +48,6 @@ export default class Camera {
 
   update() {
     if (!this.controls) return;
-    // this.controls.update();
+    this.controls.update();
   }
 }

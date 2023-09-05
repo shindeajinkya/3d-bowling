@@ -8,6 +8,7 @@ import Time from "./Utils/Time";
 import Resources from "./Utils/Resources";
 import sources from "./sources";
 import PhysicsWorld from "./World/PhysicsWorld";
+import RayCaster from "./RayCaster";
 
 declare let window: BowlingWindow;
 
@@ -23,6 +24,10 @@ class Experience {
   time?: Time;
   resources?: Resources;
   physicsWorld?: PhysicsWorld;
+  raycaster?: RayCaster;
+  isDraggingBall = false;
+  dragStart = new THREE.Vector2();
+  dragEnd = new THREE.Vector2();
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -40,10 +45,12 @@ class Experience {
     this.time = new Time();
     this.resources = new Resources(sources);
     this.camera = new Camera();
+    this.raycaster = new RayCaster();
     this.renderer = new Renderer();
     this.world = new World();
     this.physicsWorld = new PhysicsWorld();
-    console.log(this.physicsWorld);
+
+    this.world.bowl?.mesh?.updateMatrixWorld();
 
     this.sizes.on("resize", () => {
       this.resize();
@@ -52,6 +59,42 @@ class Experience {
     // Time tick event
     this.time.on("tick", () => {
       this.update();
+    });
+
+    window?.addEventListener("mousedown", (event) => {
+      if (this.world?.bowl?.cursorOnBall) {
+        this.isDraggingBall = true;
+        this.dragStart.set(event.clientX, event.clientY);
+      }
+    });
+    // window?.addEventListener("touchstart", (event) => {
+    //   if (this.world?.bowl?.cursorOnBall) {
+    //     this.isDraggingBall = true;
+    //     console.log("called", event);
+    //     // this.dragStart.set(event.);
+    //   }
+    // });
+    window?.addEventListener("mouseup", (event) => {
+      console.log(event);
+      if (this.isDraggingBall) {
+        this.dragEnd.set(event.clientX, event.clientY);
+        const difference = this.dragEnd.clone().sub(this.dragStart);
+        if (difference.y < 0) {
+          alert("drag down");
+          this.isDraggingBall = false;
+          return;
+        }
+
+        const upperLimitX = 300;
+        const upperLimitZ = 500;
+        const intensityX =
+          (difference.y < upperLimitX ? difference.y : upperLimitX) /
+          upperLimitX;
+        const intensityZ =
+          Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
+        this.world?.bowl?.launch(4000 + 1000 * intensityX, intensityZ);
+        this.isDraggingBall = false;
+      }
     });
   }
 
@@ -62,8 +105,9 @@ class Experience {
 
   update() {
     this.physicsWorld?.update();
-    this.camera?.update();
+    this.raycaster?.update();
     this.world?.update();
+    this.camera?.update();
     this.renderer?.update();
   }
 }

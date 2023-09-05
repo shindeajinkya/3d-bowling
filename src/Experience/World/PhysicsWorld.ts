@@ -33,12 +33,12 @@ export default class PhysicsWorld {
         restitution: 0.7,
       }
     );
-    this.instance?.addContactMaterial(this.defaultContactMaterial);
+    this.instance.addContactMaterial(this.defaultContactMaterial);
     this.instance.defaultContactMaterial = this.defaultContactMaterial;
   }
 
   update() {
     if (!this.time) return;
-    this.instance?.step(1 / 60, this.time.delta, 2);
+    this.instance?.step(1 / 60, this.time.delta, 3);
   }
 }

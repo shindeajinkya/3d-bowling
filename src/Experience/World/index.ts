@@ -38,12 +38,12 @@ export default class World {
 
   update() {
     // this.walls?.update();
-    this.bowl?.update();
     this.pins?.update();
+    this.bowl?.update();
 
     if (!this.bowl?.mesh || !this.camera?.instance) return;
 
     this.camera.instance.position.x =
-      this.bowl?.mesh?.position.x < 0 ? this.bowl?.mesh?.position.x - 4 : -4;
+      this.bowl?.mesh?.position.x < 0 ? this.bowl?.mesh?.position.x - 2 : -2;
   }
 }
