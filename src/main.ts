@@ -1,13 +1,13 @@
 import "./style.css";
-import * as THREE from "three";
-import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+// import * as THREE from "three";
+// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
-import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
+// import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 
-import * as CANNON from "cannon-es";
+// import * as CANNON from "cannon-es";
 import Experience from "./Experience";
 
-const experience = new Experience(document.querySelector("canvas.webgl"));
+new Experience(document.querySelector("canvas.webgl"));
 
 // var updateCOM = function (body: CANNON.Body) {
 //   //first calculate the center of mass

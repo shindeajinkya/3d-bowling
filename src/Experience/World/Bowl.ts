@@ -1,11 +1,10 @@
-import * as THREE from "three";
 import * as CANNON from "cannon-es";
+import * as THREE from "three";
 import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import Experience from "..";
+import RayCaster from "../RayCaster";
 import Resources from "../Utils/Resources";
 import PhysicsWorld from "./PhysicsWorld";
-import Camera from "../Camera";
-import RayCaster from "../RayCaster";
 
 export default class Bowl {
   experience: Experience | null = null;
@@ -64,6 +63,7 @@ export default class Bowl {
   }
 
   launch(intensityX: number, intensityZ: number) {
+    if (!this.physicsBody) return;
     this.physicsBody.applyLocalForce(
       new CANNON.Vec3(intensityX, 0, intensityZ),
       new CANNON.Vec3(0, 0, 0)
