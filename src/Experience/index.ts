@@ -9,7 +9,6 @@ import Resources from "./Utils/Resources";
 import sources from "./sources";
 import PhysicsWorld from "./World/PhysicsWorld";
 import RayCaster from "./RayCaster";
-import { isTouchDevice } from "../utils/index";
 
 declare let window: BowlingWindow;
 
@@ -26,9 +25,6 @@ class Experience {
   resources?: Resources;
   physicsWorld?: PhysicsWorld;
   raycaster?: RayCaster;
-  isDraggingBall = false;
-  dragStart = new THREE.Vector2();
-  dragEnd = new THREE.Vector2();
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -62,47 +58,36 @@ class Experience {
       this.update();
     });
 
-    window?.addEventListener("mousedown", (event) => {
-      const isTouch = isTouchDevice();
-      if (this.world?.bowl?.cursorOnBall && !isTouch) {
-        this.isDraggingBall = true;
-        this.dragStart.set(event.clientX, event.clientY);
+    // raycaster events
+    this.raycaster.on("mousedown", () => {
+      if (!this.world?.bowl) return;
+      if (this.world?.bowl?.cursorOnBall) {
+        this.world.bowl.isDraggingBall = true;
       }
     });
 
-    window.addEventListener("touchstart", (event) => {
-      if (!this.sizes || !this.camera?.instance || !this.world?.bowl) return;
-      const touchStart = event.changedTouches[0];
-      this.dragStart.set(touchStart.clientX, touchStart.clientY);
-      const pointer = new THREE.Vector2(
-        (touchStart.clientX / this.sizes.width) * 2 - 1,
-        -(touchStart.clientY / this.sizes.height) * 2 + 1
-      );
-      this.raycaster?.instance?.setFromCamera(pointer, this.camera?.instance);
-      this.isDraggingBall = this.world?.bowl?.isMeshIntersecting();
+    this.raycaster.on("touchstart", () => {
+      if (!this.world?.bowl) return;
+      this.world.bowl.isDraggingBall = this.world?.bowl?.isMeshIntersecting();
     });
 
-    window.addEventListener("touchend", (event) => {
-      const touchEnd = event.changedTouches[0];
-      this.dragEnd.set(touchEnd.clientX, touchEnd.clientY);
+    this.raycaster.on("touchend", () => {
       this.handleLaunch();
     });
 
-    window?.addEventListener("mouseup", (event) => {
-      const isTouch = isTouchDevice();
-      if (!isTouch) {
-        this.dragEnd.set(event.clientX, event.clientY);
-        this.handleLaunch();
-      }
+    this.raycaster.on("mouseup", () => {
+      this.handleLaunch();
     });
   }
 
   handleLaunch() {
-    if (this.isDraggingBall) {
-      const difference = this.dragEnd.clone().sub(this.dragStart);
+    if (this.world?.bowl?.isDraggingBall && this.raycaster) {
+      const difference = this.raycaster.dragEnd
+        .clone()
+        .sub(this.raycaster.dragStart);
       if (difference.y < 0) {
         alert("drag down");
-        this.isDraggingBall = false;
+        this.world.bowl.isDraggingBall = false;
         return;
       }
 
@@ -113,15 +98,18 @@ class Experience {
       const intensityZ =
         Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
       this.world?.bowl?.launch(4000 + 1000 * intensityX, intensityZ);
-      this.isDraggingBall = false;
     }
-    this.dragStart.set(0, 0);
-    this.dragEnd.set(0, 0);
+    this.reset();
   }
 
   resize() {
     this.camera?.resize();
     this.renderer?.resize();
+  }
+
+  reset() {
+    this.world?.bowl?.reset();
+    this.raycaster?.reset();
   }
 
   update() {

@@ -16,6 +16,7 @@ export default class Bowl {
   mesh?: THREE.Mesh;
   raycaster?: RayCaster;
   cursorOnBall = false;
+  isDraggingBall = false;
 
   constructor() {
     this.experience = new Experience(null);
@@ -88,5 +89,9 @@ export default class Bowl {
     this.resource?.scene?.position.copy(this.physicsBody?.position as any);
 
     this.cursorOnBall = this.isMeshIntersecting();
+  }
+
+  reset() {
+    this.isDraggingBall = false;
   }
 }
