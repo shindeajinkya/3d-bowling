@@ -2,6 +2,7 @@ import * as THREE from "three";
 import Experience from ".";
 import Sizes from "./Utils/Sizes";
 import Camera from "./Camera";
+import { isTouchDevice } from "../utils";
 
 export default class RayCaster {
   experience: Experience | null = null;
@@ -18,14 +19,16 @@ export default class RayCaster {
     this.mouse = new THREE.Vector2();
 
     window.addEventListener("mousemove", (event) => {
-      if (!this.mouse || !this.sizes) return;
+      const isTouch = isTouchDevice();
+      if (!this.mouse || !this.sizes || isTouch) return;
       this.mouse.x = (event.clientX / this.sizes?.width) * 2 - 1;
       this.mouse.y = -(event.clientY / this.sizes.height) * 2 + 1;
     });
   }
 
   update() {
-    if (!this.mouse || !this.camera?.instance) return;
+    const isTouch = isTouchDevice();
+    if (!this.mouse || !this.camera?.instance || isTouch) return;
     this.instance?.setFromCamera(this.mouse, this.camera.instance);
   }
 }

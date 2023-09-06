@@ -9,6 +9,7 @@ import Resources from "./Utils/Resources";
 import sources from "./sources";
 import PhysicsWorld from "./World/PhysicsWorld";
 import RayCaster from "./RayCaster";
+import { isTouchDevice } from "../utils/index";
 
 declare let window: BowlingWindow;
 
@@ -62,40 +63,60 @@ class Experience {
     });
 
     window?.addEventListener("mousedown", (event) => {
-      if (this.world?.bowl?.cursorOnBall) {
+      const isTouch = isTouchDevice();
+      if (this.world?.bowl?.cursorOnBall && !isTouch) {
         this.isDraggingBall = true;
         this.dragStart.set(event.clientX, event.clientY);
       }
     });
-    // window?.addEventListener("touchstart", (event) => {
-    //   if (this.world?.bowl?.cursorOnBall) {
-    //     this.isDraggingBall = true;
-    //     console.log("called", event);
-    //     // this.dragStart.set(event.);
-    //   }
-    // });
-    window?.addEventListener("mouseup", (event) => {
-      console.log(event);
-      if (this.isDraggingBall) {
-        this.dragEnd.set(event.clientX, event.clientY);
-        const difference = this.dragEnd.clone().sub(this.dragStart);
-        if (difference.y < 0) {
-          alert("drag down");
-          this.isDraggingBall = false;
-          return;
-        }
 
-        const upperLimitX = 300;
-        const upperLimitZ = 500;
-        const intensityX =
-          (difference.y < upperLimitX ? difference.y : upperLimitX) /
-          upperLimitX;
-        const intensityZ =
-          Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
-        this.world?.bowl?.launch(4000 + 1000 * intensityX, intensityZ);
-        this.isDraggingBall = false;
+    window.addEventListener("touchstart", (event) => {
+      if (!this.sizes || !this.camera?.instance || !this.world?.bowl) return;
+      const touchStart = event.changedTouches[0];
+      this.dragStart.set(touchStart.clientX, touchStart.clientY);
+      const pointer = new THREE.Vector2(
+        (touchStart.clientX / this.sizes.width) * 2 - 1,
+        -(touchStart.clientY / this.sizes.height) * 2 + 1
+      );
+      this.raycaster?.instance?.setFromCamera(pointer, this.camera?.instance);
+      this.isDraggingBall = this.world?.bowl?.isMeshIntersecting();
+    });
+
+    window.addEventListener("touchend", (event) => {
+      const touchEnd = event.changedTouches[0];
+      this.dragEnd.set(touchEnd.clientX, touchEnd.clientY);
+      this.handleLaunch();
+    });
+
+    window?.addEventListener("mouseup", (event) => {
+      const isTouch = isTouchDevice();
+      if (!isTouch) {
+        this.dragEnd.set(event.clientX, event.clientY);
+        this.handleLaunch();
       }
     });
+  }
+
+  handleLaunch() {
+    if (this.isDraggingBall) {
+      const difference = this.dragEnd.clone().sub(this.dragStart);
+      if (difference.y < 0) {
+        alert("drag down");
+        this.isDraggingBall = false;
+        return;
+      }
+
+      const upperLimitX = 300;
+      const upperLimitZ = 500;
+      const intensityX =
+        (difference.y < upperLimitX ? difference.y : upperLimitX) / upperLimitX;
+      const intensityZ =
+        Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
+      this.world?.bowl?.launch(4000 + 1000 * intensityX, intensityZ);
+      this.isDraggingBall = false;
+    }
+    this.dragStart.set(0, 0);
+    this.dragEnd.set(0, 0);
   }
 
   resize() {

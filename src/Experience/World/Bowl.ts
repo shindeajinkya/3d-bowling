@@ -70,21 +70,23 @@ export default class Bowl {
     );
   }
 
+  isMeshIntersecting() {
+    if (this.mesh && this.raycaster) {
+      const modelIntersects = this.raycaster.instance?.intersectObject(
+        this.mesh
+      );
+
+      return !!modelIntersects?.length;
+    }
+    return false;
+  }
+
   update() {
     this.mesh?.quaternion.copy(this.physicsBody?.quaternion as any);
     this.mesh?.position.copy(this.physicsBody?.position as any);
     this.resource?.scene?.quaternion.copy(this.physicsBody?.quaternion as any);
     this.resource?.scene?.position.copy(this.physicsBody?.position as any);
 
-    if (this.mesh && this.raycaster) {
-      const modelIntersects = this.raycaster.instance?.intersectObject(
-        this.mesh
-      );
-      if (modelIntersects?.length) {
-        this.cursorOnBall = true;
-      } else {
-        this.cursorOnBall = false;
-      }
-    }
+    this.cursorOnBall = this.isMeshIntersecting();
   }
 }
