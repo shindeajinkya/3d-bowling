@@ -17,6 +17,7 @@ export default class Bowl {
   raycaster?: RayCaster;
   cursorOnBall = false;
   isDraggingBall = false;
+  initialPosition = new THREE.Vector3(-6.5, 0.2, 0);
 
   constructor() {
     this.experience = new Experience(null);
@@ -64,7 +65,8 @@ export default class Bowl {
   }
 
   launch(intensityX: number, intensityZ: number) {
-    if (!this.physicsBody) return;
+    if (!this.physicsBody || this.mesh?.position.x !== this.initialPosition.x)
+      return;
     this.physicsBody.applyLocalForce(
       new CANNON.Vec3(intensityX, 0, intensityZ),
       new CANNON.Vec3(0, 0, 0)
