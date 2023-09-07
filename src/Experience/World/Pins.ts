@@ -161,7 +161,7 @@ export default class Pins {
 
     // Body
     const pinBody = new CANNON.Body({
-      mass: 0.6,
+      mass: 0.7,
       material: this.physicsWorld?.defaultMaterial,
     });
 
