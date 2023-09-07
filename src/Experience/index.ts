@@ -16,6 +16,7 @@ let instance: Experience | null = null;
 
 class Experience {
   canvas: HTMLCanvasElement | null = null;
+  resetBtn: HTMLElement | null = null;
   sizes: Sizes | null = null;
   scene: THREE.Scene = new THREE.Scene();
   renderer?: Renderer;
@@ -25,6 +26,7 @@ class Experience {
   resources?: Resources;
   physicsWorld?: PhysicsWorld;
   raycaster?: RayCaster;
+  bowlDetector?: RayCaster;
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -42,13 +44,22 @@ class Experience {
     this.time = new Time();
     this.resources = new Resources(sources);
     this.camera = new Camera();
-    this.raycaster = new RayCaster();
+    this.raycaster = new RayCaster(true);
     this.renderer = new Renderer();
     this.world = new World();
     this.physicsWorld = new PhysicsWorld();
+    this.bowlDetector = new RayCaster();
+    this.resetBtn = <HTMLElement>document.querySelector("#reset-btn");
 
+    this.setBowlDetector();
     this.world.bowl?.mesh?.updateMatrixWorld();
 
+    // handling reset button
+    this.resetBtn?.addEventListener("click", () => {
+      this.resetAlley();
+    });
+
+    // Resize event
     this.sizes.on("resize", () => {
       this.resize();
     });
@@ -80,6 +91,25 @@ class Experience {
     });
   }
 
+  setBowlDetector() {
+    if (!this.bowlDetector?.instance) return;
+    // ray direction
+    const rayOrigin = new THREE.Vector3(-1.5, 0.25, -1.5);
+    const rayDirection = new THREE.Vector3(0, 0, 10);
+    rayDirection.normalize();
+
+    this.bowlDetector?.instance?.set(rayOrigin, rayDirection);
+    this.bowlDetector.instance.far = 3;
+    const arrowHelper = new THREE.ArrowHelper(
+      rayDirection,
+      rayOrigin,
+      this.bowlDetector?.instance?.far,
+      new THREE.Color("cyan")
+    );
+    arrowHelper.visible = false;
+    this.scene.add(arrowHelper);
+  }
+
   handleLaunch() {
     if (this.world?.bowl?.isDraggingBall && this.raycaster) {
       const difference = this.raycaster.dragEnd
@@ -97,7 +127,7 @@ class Experience {
         (difference.y < upperLimitX ? difference.y : upperLimitX) / upperLimitX;
       const intensityZ =
         Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
-      this.world?.bowl?.launch(4000 + 1000 * intensityX, intensityZ);
+      this.world?.bowl?.launch(8000 + 1000 * intensityX, intensityZ);
     }
     this.reset();
   }
@@ -112,10 +142,32 @@ class Experience {
     this.raycaster?.reset();
   }
 
+  resetAlley() {
+    if (!this.world?.pins || !this.world.bowl || !this.resetBtn) return;
+    this.world.pins.resetPinsPosition();
+    this.world.bowl.resetBallPosition();
+    this.world.bowl.ballDetected = false;
+    this.resetBtn.className = this.resetBtn.className.replace(
+      "block",
+      "hidden"
+    );
+  }
+
+  showResetButton() {
+    const isDisplayNone = this.resetBtn?.className.includes("hidden");
+    if (this.world?.bowl?.ballDetected && this.resetBtn && isDisplayNone) {
+      this.resetBtn.className = this.resetBtn.className.replace(
+        "hidden",
+        "block"
+      );
+    }
+  }
+
   update() {
     this.physicsWorld?.update();
     this.raycaster?.update();
     this.world?.update();
+    this.showResetButton();
     this.camera?.update();
     this.renderer?.update();
   }

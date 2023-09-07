@@ -16,7 +16,7 @@ export default class RayCaster extends EventEmitter {
   dragStart = new THREE.Vector2();
   dragEnd = new THREE.Vector2();
 
-  constructor() {
+  constructor(useMouseAndTouch = false) {
     super();
 
     this.experience = new Experience(null);
@@ -25,6 +25,7 @@ export default class RayCaster extends EventEmitter {
     this.instance = new THREE.Raycaster();
     this.mouse = new THREE.Vector2();
 
+    if (!useMouseAndTouch) return;
     window.addEventListener("mousemove", (event) => {
       const isTouch = isTouchDevice();
       if (!this.mouse || !this.sizes || isTouch) return;

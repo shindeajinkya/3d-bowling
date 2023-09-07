@@ -15,9 +15,11 @@ export default class Bowl {
   physicsBody?: CANNON.Body;
   mesh?: THREE.Mesh;
   raycaster?: RayCaster;
+  bowlDetector?: RayCaster;
   cursorOnBall = false;
   isDraggingBall = false;
   initialPosition = new THREE.Vector3(-6.5, 0.2, 0);
+  ballDetected?: boolean;
 
   constructor() {
     this.experience = new Experience(null);
@@ -25,6 +27,7 @@ export default class Bowl {
     this.resources = this.experience.resources;
     this.physicsWorld = this.experience.physicsWorld;
     this.raycaster = this.experience.raycaster;
+    this.bowlDetector = this.experience.bowlDetector;
 
     // Setup
     this.resource = this.resources?.items.bowlModel as GLTF;
@@ -55,7 +58,7 @@ export default class Bowl {
   createSpherePhysics() {
     const shape = new CANNON.Sphere(0.2);
     this.physicsBody = new CANNON.Body({
-      mass: 10,
+      mass: 20,
       position: new CANNON.Vec3(0, 0, 0),
       shape,
       material: this.physicsWorld?.defaultMaterial,
@@ -71,6 +74,15 @@ export default class Bowl {
       new CANNON.Vec3(intensityX, 0, intensityZ),
       new CANNON.Vec3(0, 0, 0)
     );
+  }
+
+  hasMeshIntersectedDetector() {
+    if (this.ballDetected || !this.bowlDetector || !this.mesh) return;
+    const modelIntersects = this.bowlDetector.instance?.intersectObject(
+      this.mesh
+    );
+
+    this.ballDetected = !!modelIntersects?.length;
   }
 
   isMeshIntersecting() {
@@ -91,9 +103,16 @@ export default class Bowl {
     this.resource?.scene?.position.copy(this.physicsBody?.position as any);
 
     this.cursorOnBall = this.isMeshIntersecting();
+    this.hasMeshIntersectedDetector();
   }
 
   reset() {
     this.isDraggingBall = false;
+  }
+
+  resetBallPosition() {
+    this.physicsBody?.position.copy(this.initialPosition as any);
+    this.physicsBody?.quaternion.set(0, 0, 0, 1);
+    this.physicsBody?.sleep();
   }
 }

@@ -35,6 +35,7 @@ export default class Pins {
   };
   physicsWorld?: PhysicsWorld;
   pinsToUpdate: DataToUpdate[] = [];
+  pinsInitialPositions: THREE.Vector3[] = [];
 
   constructor() {
     this.experience = new Experience(null);
@@ -66,9 +67,11 @@ export default class Pins {
         child.castShadow = true;
       }
     });
-
     const mesh = this.createGeometryForPin(x, z);
     const body = this.createPhysicsBodyForPin(x, z);
+    this.pinsInitialPositions.push(
+      new THREE.Vector3(body.position.x, body.position.y, body.position.z)
+    );
     this.scene?.add(clonedScene);
     this.pinsToUpdate.push({
       model: clonedScene,
@@ -158,7 +161,7 @@ export default class Pins {
 
     // Body
     const pinBody = new CANNON.Body({
-      mass: 0.4,
+      mass: 0.6,
       material: this.physicsWorld?.defaultMaterial,
     });
 
@@ -200,6 +203,16 @@ export default class Pins {
 
       pin.model?.quaternion.copy(pin.body.quaternion as any);
       pin.model?.position.copy(pin.body.position as any);
+    }
+  }
+
+  resetPinsPosition() {
+    for (let i = 0; i < this.pinsToUpdate.length; i++) {
+      this.pinsToUpdate[i].body.position.copy(
+        this.pinsInitialPositions[i] as any
+      );
+      this.pinsToUpdate[i].body.quaternion.set(0, 0, 0, 1);
+      this.pinsToUpdate[i].body.sleep();
     }
   }
 
