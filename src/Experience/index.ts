@@ -127,9 +127,19 @@ class Experience {
         (difference.y < upperLimitX ? difference.y : upperLimitX) / upperLimitX;
       const intensityZ =
         Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
-      this.world?.bowl?.launch(8000 + 1000 * intensityX, intensityZ);
+      this.world?.bowl?.launch(5500 + 1000 * intensityX, intensityZ);
     }
     this.reset();
+  }
+
+  calculateScore() {
+    const scoreboard = document.querySelector("#scoreboard");
+    if (!this.world?.pins || !scoreboard) return;
+    const score = this.world?.pins?.getStandingPins();
+
+    console.log(`The score is: ${10 - score}`);
+
+    scoreboard.innerHTML = `Score: ${10 - score}`;
   }
 
   resize() {
@@ -160,6 +170,9 @@ class Experience {
         "hidden",
         "block"
       );
+      setTimeout(() => {
+        this.calculateScore();
+      }, 1500);
     }
   }
 

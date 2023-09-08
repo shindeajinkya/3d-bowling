@@ -7,7 +7,9 @@ export default class PhysicsWorld {
   time?: Time;
   instance?: CANNON.World;
   defaultMaterial?: CANNON.Material;
+  pinMaterial?: CANNON.Material;
   defaultContactMaterial?: CANNON.ContactMaterial;
+  pinContactMaterial?: CANNON.ContactMaterial;
 
   constructor() {
     this.experience = new Experience(null);
@@ -25,16 +27,27 @@ export default class PhysicsWorld {
   setMaterials() {
     if (!this.instance) return;
     this.defaultMaterial = new CANNON.Material("default");
+    this.pinMaterial = new CANNON.Material("pin");
     this.defaultContactMaterial = new CANNON.ContactMaterial(
       this.defaultMaterial,
       this.defaultMaterial,
       {
-        friction: 0.1,
-        restitution: 0.7,
+        friction: 0.01,
       }
     );
     this.instance.addContactMaterial(this.defaultContactMaterial);
     this.instance.defaultContactMaterial = this.defaultContactMaterial;
+
+    // Pin contact material
+    this.pinContactMaterial = new CANNON.ContactMaterial(
+      this.pinMaterial,
+      this.defaultMaterial,
+      {
+        friction: 0.1,
+      }
+    );
+
+    this.instance.addContactMaterial(this.pinContactMaterial);
   }
 
   update() {

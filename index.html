@@ -7,7 +7,10 @@
   </head>
   <body>
     <canvas class="webgl"></canvas>
-    <button id="reset-btn" class="px-2 py-1 rounded hidden absolute z-10 cursor-pointer bg-white text-black top-2 left-2">Reset</button>
+    <div class="absolute z-10 top-2 left-2 flex items-center gap-3">
+      <button id="reset-btn" class="px-2 py-1 rounded hidden cursor-pointer bg-white text-black">Reset</button>
+      <p id="scoreboard" class="text-white">Score: </p>
+    </div>
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>

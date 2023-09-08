@@ -4,6 +4,7 @@ import { GLTF } from "three/examples/jsm/loaders/GLTFLoader.js";
 import Experience from "..";
 import Resources from "../Utils/Resources";
 import PhysicsWorld from "./PhysicsWorld";
+import RayCaster from "../RayCaster";
 
 interface DataToUpdate {
   body: CANNON.Body;
@@ -36,6 +37,8 @@ export default class Pins {
   physicsWorld?: PhysicsWorld;
   pinsToUpdate: DataToUpdate[] = [];
   pinsInitialPositions: THREE.Vector3[] = [];
+  scoreTracker: RayCaster[] = [];
+  pinsArrangedByRow: THREE.Group[][] = [];
 
   constructor() {
     this.experience = new Experience(null);
@@ -50,7 +53,7 @@ export default class Pins {
     this.plotPins();
   }
 
-  createPin(x: number, z: number) {
+  createPin(x: number, z: number, index: number) {
     if (!this.resource) return;
     const clonedScene = this.resource.scene.clone();
     clonedScene.position.x = x;
@@ -73,6 +76,9 @@ export default class Pins {
       new THREE.Vector3(body.position.x, body.position.y, body.position.z)
     );
     this.scene?.add(clonedScene);
+    if (this.pinsArrangedByRow[index]) {
+      this.pinsArrangedByRow[index].push(mesh);
+    } else [(this.pinsArrangedByRow[index] = [mesh])];
     this.pinsToUpdate.push({
       model: clonedScene,
       mesh,
@@ -160,9 +166,10 @@ export default class Pins {
     );
 
     // Body
+
     const pinBody = new CANNON.Body({
-      mass: 0.7,
-      material: this.physicsWorld?.defaultMaterial,
+      mass: 1.6,
+      material: this.physicsWorld?.pinMaterial,
     });
 
     // Setting position
@@ -180,16 +187,54 @@ export default class Pins {
     return pinBody;
   }
 
+  plotScoreTracker(x: number) {
+    const tracker = new RayCaster();
+    if (!tracker.instance) return;
+
+    const rayOrigin = new THREE.Vector3(x, 0.45, -1.5);
+    const rayDirection = new THREE.Vector3(0, 0, 10);
+    rayDirection.normalize();
+
+    tracker.instance.set(rayOrigin, rayDirection);
+    tracker.instance.far = 3;
+
+    const arrowHelper = new THREE.ArrowHelper(
+      rayDirection,
+      rayOrigin,
+      tracker?.instance?.far,
+      new THREE.Color("cyan")
+    );
+    arrowHelper.visible = false;
+    this.scene?.add(arrowHelper);
+
+    this.scoreTracker.push(tracker);
+  }
+
+  getStandingPins(): number {
+    let num = 0;
+
+    for (let i = 0; i < this.scoreTracker.length; i++) {
+      const pinsIntersect = this.scoreTracker[i].instance?.intersectObjects(
+        this.pinsArrangedByRow[i]
+      );
+      num += pinsIntersect?.length ?? 0;
+    }
+
+    return num;
+  }
+
   plotPins() {
     let currentPosition = 0;
     for (let i = 0; i < 4; i++) {
       let positionZ = -(i * 0.5);
       for (let j = 0; j <= i; j++) {
-        this.createPin(currentPosition * 0.5, positionZ * 0.5);
+        this.createPin(currentPosition * 0.5, positionZ * 0.5, i);
         positionZ++;
       }
+      this.plotScoreTracker(currentPosition * 0.5);
       currentPosition++;
     }
+    console.log(this.getStandingPins());
   }
 
   update() {
