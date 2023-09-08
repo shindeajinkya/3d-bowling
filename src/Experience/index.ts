@@ -17,6 +17,7 @@ let instance: Experience | null = null;
 class Experience {
   canvas: HTMLCanvasElement | null = null;
   resetBtn: HTMLElement | null = null;
+  scoreboard: Element | null = null;
   sizes: Sizes | null = null;
   scene: THREE.Scene = new THREE.Scene();
   renderer?: Renderer;
@@ -50,6 +51,7 @@ class Experience {
     this.physicsWorld = new PhysicsWorld();
     this.bowlDetector = new RayCaster();
     this.resetBtn = <HTMLElement>document.querySelector("#reset-btn");
+    this.scoreboard = document.querySelector("#scoreboard");
 
     this.setBowlDetector();
     this.world.bowl?.mesh?.updateMatrixWorld();
@@ -133,13 +135,12 @@ class Experience {
   }
 
   calculateScore() {
-    const scoreboard = document.querySelector("#scoreboard");
-    if (!this.world?.pins || !scoreboard) return;
+    if (!this.world?.pins || !this.scoreboard) return;
     const score = this.world?.pins?.getStandingPins();
 
     console.log(`The score is: ${10 - score}`);
 
-    scoreboard.innerHTML = `Score: ${10 - score}`;
+    this.scoreboard.innerHTML = `Score: ${10 - score}`;
   }
 
   resize() {
@@ -153,7 +154,13 @@ class Experience {
   }
 
   resetAlley() {
-    if (!this.world?.pins || !this.world.bowl || !this.resetBtn) return;
+    if (
+      !this.world?.pins ||
+      !this.world.bowl ||
+      !this.resetBtn ||
+      !this.scoreboard
+    )
+      return;
     this.world.pins.resetPinsPosition();
     this.world.bowl.resetBallPosition();
     this.world.bowl.ballDetected = false;
@@ -161,6 +168,7 @@ class Experience {
       "block",
       "hidden"
     );
+    this.scoreboard.innerHTML = `Score: 0`;
   }
 
   showResetButton() {
