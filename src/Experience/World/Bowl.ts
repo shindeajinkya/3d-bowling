@@ -58,7 +58,7 @@ export default class Bowl {
   createSpherePhysics() {
     const shape = new CANNON.Sphere(0.2);
     this.physicsBody = new CANNON.Body({
-      mass: 10,
+      mass: 15,
       position: new CANNON.Vec3(0, 0, 0),
       shape,
       material: this.physicsWorld?.defaultMaterial,

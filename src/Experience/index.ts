@@ -129,7 +129,7 @@ class Experience {
         (difference.y < upperLimitX ? difference.y : upperLimitX) / upperLimitX;
       const intensityZ =
         Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
-      this.world?.bowl?.launch(5500 + 1000 * intensityX, intensityZ);
+      this.world?.bowl?.launch(6500 + 1000 * intensityX, intensityZ);
     }
     this.reset();
   }

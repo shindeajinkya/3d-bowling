@@ -219,6 +219,7 @@ export default class Pins {
       );
       num += pinsIntersect?.length ?? 0;
     }
+    console.log(this.pinsToUpdate);
 
     return num;
   }
