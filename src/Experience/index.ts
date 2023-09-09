@@ -113,22 +113,37 @@ class Experience {
   }
 
   handleLaunch() {
-    if (this.world?.bowl?.isDraggingBall && this.raycaster) {
+    if (this.world?.bowl?.isDraggingBall && this.raycaster && this.sizes) {
       const difference = this.raycaster.dragEnd
         .clone()
         .sub(this.raycaster.dragStart);
-      if (difference.y < 0) {
+      if (difference.y < 0 || (difference.x === 0 && difference.y === 0)) {
         alert("drag down");
         this.world.bowl.isDraggingBall = false;
         return;
       }
 
       const upperLimitX = 300;
-      const upperLimitZ = 500;
+      const upperLimitZ = 800;
+
+      const isMobile = this.sizes.width <= 425;
+
+      const normalizedDifference =
+        (difference.x < 0
+          ? Math.max(-213, difference.x)
+          : Math.min(difference.x, 213)) / 213;
+
+      const intensityZIncludingMobile = isMobile
+        ? upperLimitZ * normalizedDifference
+        : upperLimitZ;
+
       const intensityX =
         (difference.y < upperLimitX ? difference.y : upperLimitX) / upperLimitX;
-      const intensityZ =
-        Math.abs(difference.x) < upperLimitZ ? -difference.x : upperLimitZ;
+      const intensityZ = isMobile
+        ? -intensityZIncludingMobile
+        : Math.abs(difference.x) < Math.abs(upperLimitZ)
+        ? -difference.x
+        : upperLimitZ;
       this.world?.bowl?.launch(5500 + 1000 * intensityX, intensityZ);
     }
     this.reset();
