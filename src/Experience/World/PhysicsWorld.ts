@@ -27,7 +27,10 @@ export default class PhysicsWorld {
   setMaterials() {
     if (!this.instance) return;
     this.defaultMaterial = new CANNON.Material("default");
-    this.pinMaterial = new CANNON.Material("pin");
+    this.pinMaterial = new CANNON.Material({
+      friction: 0.001,
+      // restitution: -1,
+    });
     this.defaultContactMaterial = new CANNON.ContactMaterial(
       this.defaultMaterial,
       this.defaultMaterial,
