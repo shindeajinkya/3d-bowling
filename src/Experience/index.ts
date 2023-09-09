@@ -180,7 +180,7 @@ class Experience {
       );
       setTimeout(() => {
         this.calculateScore();
-      }, 1500);
+      }, 2000);
     }
   }
 
