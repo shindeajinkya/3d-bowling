@@ -42,6 +42,13 @@ export default class Resources extends EventEmitter {
         this.loaders.gltfLoader.load(source.path, (gltf) => {
           this.sourceLoaded(source, gltf);
         });
+      } else if (source.type === "texture-ldr") {
+        this.loaders.textureLoader.load(source.path, (file) => {
+          file.mapping = THREE.EquirectangularReflectionMapping;
+          file.colorSpace = THREE.SRGBColorSpace;
+
+          this.sourceLoaded(source, file);
+        });
       }
     }
   }

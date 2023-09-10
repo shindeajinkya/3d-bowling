@@ -35,4 +35,9 @@ export default [
     type: "gltfModel",
     path: "bowling_ball/scene.gltf",
   },
+  {
+    name: "environmentMapTexture",
+    type: "texture-ldr",
+    path: "environmentMaps/snow-mountains.jpg",
+  },
 ];

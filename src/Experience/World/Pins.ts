@@ -219,7 +219,6 @@ export default class Pins {
       );
       num += pinsIntersect?.length ?? 0;
     }
-    console.log(this.pinsToUpdate);
 
     return num;
   }
@@ -235,7 +234,6 @@ export default class Pins {
       this.plotScoreTracker(currentPosition * 0.5);
       currentPosition++;
     }
-    console.log(this.getStandingPins());
   }
 
   update() {
