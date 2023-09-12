@@ -28,6 +28,8 @@ class Experience {
   physicsWorld?: PhysicsWorld;
   raycaster?: RayCaster;
   bowlDetector?: RayCaster;
+  score = 0;
+  remainingMove = 2;
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -151,11 +153,30 @@ class Experience {
 
   calculateScore() {
     if (!this.world?.pins || !this.scoreboard) return;
-    const score = this.world?.pins?.getStandingPins();
+    const standingPins = this.world?.pins?.getStandingPins();
+    this.score = 10 - standingPins;
+    this.remainingMove -= 1;
 
-    console.log(`The score is: ${10 - score}`);
+    if (
+      this.score != 10 &&
+      this.world.bowl &&
+      this.resetBtn &&
+      this.remainingMove !== 0
+    ) {
+      this.world.bowl.resetBallPosition();
+      this.world.bowl.ballDetected = false;
+      this.resetBtn.className = this.resetBtn.className.replace(
+        "block",
+        "hidden"
+      );
+      return;
+    }
 
-    this.scoreboard.innerHTML = `Score: ${10 - score}`;
+    console.log(`The score is: ${this.score}`);
+
+    this.resetAlley();
+    this.remainingMove = 2;
+    this.scoreboard.innerHTML = `Score: ${this.score}`;
   }
 
   resize() {

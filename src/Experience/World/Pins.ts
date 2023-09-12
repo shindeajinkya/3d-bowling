@@ -212,13 +212,24 @@ export default class Pins {
 
   getStandingPins(): number {
     let num = 0;
+    const standingPinsId: number[] = [];
 
     for (let i = 0; i < this.scoreTracker.length; i++) {
       const pinsIntersect = this.scoreTracker[i].instance?.intersectObjects(
         this.pinsArrangedByRow[i]
       );
+      standingPinsId.push(
+        ...(pinsIntersect?.map((pin) => pin.object.parent?.id ?? 0) ?? [])
+      );
       num += pinsIntersect?.length ?? 0;
     }
+
+    this.pinsToUpdate
+      .filter((pin) => !standingPinsId.includes(pin.mesh.id))
+      .forEach((pin) => {
+        pin.model.visible = false;
+        this.physicsWorld?.instance?.removeBody(pin.body);
+      });
 
     return num;
   }
@@ -256,7 +267,12 @@ export default class Pins {
         this.pinsInitialPositions[i] as any
       );
       this.pinsToUpdate[i].body.quaternion.set(0, 0, 0, 1);
+      this.pinsToUpdate[i].body.mass = 1.6;
       this.pinsToUpdate[i].body.sleep();
+
+      this.physicsWorld?.instance?.addBody(this.pinsToUpdate[i].body);
+
+      this.pinsToUpdate[i].model.visible = true;
     }
   }
 
