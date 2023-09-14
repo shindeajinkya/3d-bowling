@@ -9,6 +9,7 @@ import Resources from "./Utils/Resources";
 import sources from "./sources";
 import PhysicsWorld from "./World/PhysicsWorld";
 import RayCaster from "./RayCaster";
+import Score from "./World/Score";
 
 declare let window: BowlingWindow;
 
@@ -28,12 +29,7 @@ class Experience {
   physicsWorld?: PhysicsWorld;
   raycaster?: RayCaster;
   bowlDetector?: RayCaster;
-  score = 0;
-  previousFrameScore = 0;
-  bufferFrame = 0;
-  bufferBowl = 0;
-  remainingMove = 2;
-  standingPins = 10;
+  score?: Score;
 
   constructor(canvas: HTMLCanvasElement | null) {
     if (instance) {
@@ -58,6 +54,7 @@ class Experience {
     this.bowlDetector = new RayCaster();
     this.resetBtn = <HTMLElement>document.querySelector("#reset-btn");
     this.scoreboard = document.querySelector("#scoreboard");
+    this.score = new Score();
 
     this.setBowlDetector();
     this.world.bowl?.mesh?.updateMatrixWorld();
@@ -155,46 +152,6 @@ class Experience {
     this.reset();
   }
 
-  calculateScore() {
-    if (!this.world?.pins || !this.scoreboard) return;
-    const standingPins = this.world?.pins?.getStandingPins();
-    this.bufferBowl = this.standingPins - standingPins;
-    this.bufferFrame += this.bufferBowl;
-    this.remainingMove -= 1;
-    if (this.bufferFrame === 10 || this.remainingMove === 0) {
-      this.score += this.bufferBowl;
-    }
-
-    if (
-      this.bufferFrame !== 10 &&
-      this.world.bowl &&
-      this.resetBtn &&
-      this.remainingMove !== 0
-    ) {
-      if (this.remainingMove == 1 && this.previousFrameScore === 10) {
-        this.score += 10 + this.bufferBowl;
-      } else {
-        this.score += this.bufferBowl;
-      }
-      this.standingPins = standingPins;
-      this.world.bowl.resetBallPosition();
-      this.world.bowl.ballDetected = false;
-      this.resetBtn.className = this.resetBtn.className.replace(
-        "block",
-        "hidden"
-      );
-      return;
-    }
-
-    console.log(`The score is: ${this.score}`);
-
-    this.resetAlley();
-    this.remainingMove = 2;
-    this.previousFrameScore = this.bufferFrame;
-    this.bufferFrame = 0;
-    this.scoreboard.innerHTML = `Score: ${this.score}`;
-  }
-
   resize() {
     this.camera?.resize();
     this.renderer?.resize();
@@ -210,7 +167,8 @@ class Experience {
       !this.world?.pins ||
       !this.world.bowl ||
       !this.resetBtn ||
-      !this.scoreboard
+      !this.scoreboard ||
+      !this.score
     )
       return;
     this.world.pins.resetPinsPosition();
@@ -221,8 +179,8 @@ class Experience {
       "hidden"
     );
     this.scoreboard.innerHTML = `Score: 0`;
-    this.remainingMove = 2;
-    this.standingPins = 10;
+    this.score.remainingMove = 2;
+    this.score.standingPins = 10;
   }
 
   showResetButton() {
@@ -233,7 +191,7 @@ class Experience {
         "block"
       );
       setTimeout(() => {
-        this.calculateScore();
+        this.score?.calculateScore();
       }, 2000);
     }
   }

@@ -43,6 +43,10 @@ export default class World {
       this.pins = new Pins();
       this.bowl = new Bowl();
       this.environment = new Environment();
+      if (this.experience?.score) {
+        this.experience.score.pins = this.pins;
+        this.experience.score.bowl = this.bowl;
+      }
     });
   }
 
