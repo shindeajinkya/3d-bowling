@@ -230,7 +230,6 @@ export default class Pins {
         pin.model.visible = false;
         this.physicsWorld?.instance?.removeBody(pin.body);
       });
-
     return num;
   }
 
