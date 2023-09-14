@@ -30,7 +30,8 @@ class Experience {
   bowlDetector?: RayCaster;
   score = 0;
   previousFrameScore = 0;
-  buffer = 0;
+  bufferFrame = 0;
+  bufferBowl = 0;
   remainingMove = 2;
   standingPins = 10;
 
@@ -157,20 +158,23 @@ class Experience {
   calculateScore() {
     if (!this.world?.pins || !this.scoreboard) return;
     const standingPins = this.world?.pins?.getStandingPins();
-    this.buffer += this.standingPins - standingPins;
+    this.bufferBowl = this.standingPins - standingPins;
+    this.bufferFrame += this.bufferBowl;
     this.remainingMove -= 1;
-    if (this.buffer === 10 || this.remainingMove === 0) {
-      this.score += this.buffer;
+    if (this.bufferFrame === 10 || this.remainingMove === 0) {
+      this.score += this.bufferBowl;
     }
 
     if (
-      this.buffer !== 10 &&
+      this.bufferFrame !== 10 &&
       this.world.bowl &&
       this.resetBtn &&
       this.remainingMove !== 0
     ) {
       if (this.remainingMove == 1 && this.previousFrameScore === 10) {
-        this.score += 10 + this.buffer;
+        this.score += 10 + this.bufferBowl;
+      } else {
+        this.score += this.bufferBowl;
       }
       this.standingPins = standingPins;
       this.world.bowl.resetBallPosition();
@@ -186,8 +190,8 @@ class Experience {
 
     this.resetAlley();
     this.remainingMove = 2;
-    this.previousFrameScore = this.buffer;
-    this.buffer = 0;
+    this.previousFrameScore = this.bufferFrame;
+    this.bufferFrame = 0;
     this.scoreboard.innerHTML = `Score: ${this.score}`;
   }
 
