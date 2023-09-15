@@ -20,6 +20,7 @@ export default class Bowl {
   isDraggingBall = false;
   initialPosition = new THREE.Vector3(-6.5, 0.2, 0);
   ballDetected?: boolean;
+  hitSound = new Audio("/sounds/hit.mp3");
 
   constructor() {
     this.experience = new Experience(null);
@@ -63,6 +64,18 @@ export default class Bowl {
       shape,
       material: this.physicsWorld?.defaultMaterial,
     });
+
+    this.physicsBody.addEventListener("collide", (collision: any) => {
+      const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+      if (impactStrength > 1.5) {
+        this.hitSound.volume =
+          (impactStrength * Math.random()) / impactStrength;
+        this.hitSound.currentTime = 0;
+        this.hitSound.play();
+      }
+    });
+
     this.physicsBody.position.set(-6.5, 0.2, 0);
     this.physicsWorld?.instance?.addBody(this.physicsBody);
   }

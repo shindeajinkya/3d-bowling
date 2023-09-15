@@ -39,6 +39,7 @@ export default class Pins {
   pinsInitialPositions: THREE.Vector3[] = [];
   scoreTracker: RayCaster[] = [];
   pinsArrangedByRow: THREE.Group[][] = [];
+  hitSound = new Audio("/sounds/hit.mp3");
 
   constructor() {
     this.experience = new Experience(null);
@@ -178,6 +179,17 @@ export default class Pins {
     pinBody.addShape(sphereShape, new CANNON.Vec3(0, 0.075, 0));
     pinBody.addShape(middleCylinderShape, new CANNON.Vec3(0, 0.15, 0));
     pinBody.addShape(topCylinderShape, new CANNON.Vec3(0, 0.34, 0));
+
+    pinBody.addEventListener("collide", (collision: any) => {
+      const impactStrength = collision.contact.getImpactVelocityAlongNormal();
+
+      if (impactStrength > 1.5) {
+        this.hitSound.volume =
+          (impactStrength * Math.random()) / impactStrength;
+        this.hitSound.currentTime = 0;
+        this.hitSound.play();
+      }
+    });
 
     // update centre of mass
     this.updateCOM(pinBody);
