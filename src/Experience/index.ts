@@ -18,6 +18,8 @@ let instance: Experience | null = null;
 class Experience {
   canvas: HTMLCanvasElement | null = null;
   resetBtn: HTMLElement | null = null;
+  modal: HTMLElement | null = null;
+  instructionButton: HTMLElement | null = null;
   scoreboard: Element | null = null;
   sizes: Sizes | null = null;
   scene: THREE.Scene = new THREE.Scene();
@@ -54,7 +56,11 @@ class Experience {
     this.bowlDetector = new RayCaster();
     this.resetBtn = <HTMLElement>document.querySelector("#reset-btn");
     this.scoreboard = document.querySelector("#scoreboard");
+    this.modal = document.querySelector("#modal-wrapper");
+    this.instructionButton = document.querySelector("#instructions-submit");
     this.score = new Score();
+
+    this.checkInstructions();
 
     this.setBowlDetector();
     this.world.bowl?.mesh?.updateMatrixWorld();
@@ -62,6 +68,12 @@ class Experience {
     // handling reset button
     this.resetBtn?.addEventListener("click", () => {
       this.resetAlley();
+    });
+
+    // instruction event listener
+    this.instructionButton?.addEventListener("click", () => {
+      localStorage.setItem("showInstructions", "true");
+      this.checkInstructions();
     });
 
     // Resize event
@@ -96,6 +108,16 @@ class Experience {
     });
   }
 
+  checkInstructions() {
+    if (!this.modal) return;
+
+    if (!localStorage.getItem("showInstructions")) {
+      this.modal.className = this.modal.className.replace("hidden", "flex");
+    } else {
+      this.modal.className = this.modal.className.replace("flex", "hidden");
+    }
+  }
+
   setBowlDetector() {
     if (!this.bowlDetector?.instance) return;
     // ray direction
@@ -116,6 +138,7 @@ class Experience {
   }
 
   handleLaunch() {
+    if (!localStorage.getItem("showInstructions")) return;
     if (this.world?.bowl?.isDraggingBall && this.raycaster && this.sizes) {
       const difference = this.raycaster.dragEnd
         .clone()
